@@ -21,7 +21,7 @@ from invenio_archivematica.signals import oais_transfer_failed, \
     oais_transfer_finished, oais_transfer_processing, oais_transfer_started
 
 
-@shared_task(ignore_result=True)
+# @shared_task(ignore_result=True)
 def oais_start_transfer(uuid, accession_id='', archivematica_id=None):
     """Archive a sip.
 
@@ -143,7 +143,7 @@ def oais_fail_transfer(uuid, accession_id='', archivematica_id=None):
     oais_transfer_failed.send(SIP(ark.sip))
 
 
-@shared_task(ignore_result=True)
+# @shared_task(ignore_result=True)
 def archive_new_sips(accession_id_factory, days=30, hours=0, minutes=0,
                      seconds=0, delay=True):
     """Start the archive process for some sip.
@@ -193,7 +193,9 @@ def archive_new_sips(accession_id_factory, days=30, hours=0, minutes=0,
     arks = Archive.query.filter(
         Archive.status == ArchiveStatus.NEW,
         Archive.updated <= str(begin_date)).all()
+
     facto = import_string(accession_id_factory)
+
     # we start the transfer for all the founded sip
     for ark in arks:
         accession_id = facto(ark)

@@ -14,9 +14,11 @@ from subprocess import call
 
 from flask import current_app
 from invenio_sipstore.api import SIP
-from invenio_sipstore.archivers import BaseArchiver
+# from invenio_sipstore.archivers import BaseArchiver
+from invenio_sipstore.models import RecordSIP
 
 from invenio_archivematica.models import Archive
+from .archivers import ArchivematicaArchiver
 
 
 def create_accession_id(ark):
@@ -50,7 +52,7 @@ def transfer_cp(uuid, config):
         :py:data:`invenio_sipstore.config.SIPSTORE_ARCHIVER_LOCATION_NAME`
     """
     sip = SIP.get_sip(uuid)
-    archiver = BaseArchiver(sip)
+    archiver = ArchivematicaArchiver(sip)
     archiver.write_all_files()
     return 0
 
@@ -159,3 +161,15 @@ def is_archivable_default(sip):
 def is_archivable_none(sip):
     """Archive no sip."""
     return False
+
+
+def metadata_factory(sip):
+    """Return list of tuples(key, value) with default data.
+
+    :rtype: List[(str,str)]
+    """
+    record_sips = RecordSIP.get_by_sip(sip_id=sip.id)
+    default_list = [('filename', 'objects/data')]
+    default_list.extend(('dc.identifier', str(r.pid_id))
+                        for r in record_sips)
+    return default_list
